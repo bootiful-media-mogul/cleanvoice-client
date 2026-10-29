@@ -21,7 +21,8 @@ public record EditConfig(
 		@JsonProperty("remove_noise") NoiseRemoval removeNoise, @JsonProperty("studio_sound") StudioSound studioSound,
 		Boolean normalize, @JsonProperty("keep_music") Boolean keepMusic,
 		/**
-		 * @deprecated legacy option; prefer {@link #studioSound()}. */
+		 * @deprecated legacy option; prefer {@link #studioSound()}.
+		 */
 		@Deprecated Boolean autoeq,
 		// output
 		@JsonProperty("export_format") ExportFormat exportFormat, @JsonProperty("target_lufs") Double targetLufs,
