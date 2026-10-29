@@ -130,7 +130,7 @@
                             <jreleaser>
                                 <release>
                                     <github>
-                                        <branch>master</branch>
+                                        <branch>main</branch>
                                     </github>
                                 </release>
                                 <signing>
