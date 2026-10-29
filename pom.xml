@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.joshlong</groupId>
     <artifactId>cleanvoice-client</artifactId>
-    <version>0.0.5</version>
+    <version>0.0.6-SNAPSHOT</version>
     <name>Cleanvoice.ai Client</name>
     <description>
         A Java and Spring Boot autoconfiguration for the Cleanvoice.ai API.
