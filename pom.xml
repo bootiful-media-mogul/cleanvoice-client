@@ -10,14 +10,14 @@
     </parent>
     <groupId>com.joshlong</groupId>
     <artifactId>cleanvoice-client</artifactId>
-    <version>0.0.4</version>
+    <version>0.0.5-SNAPSHOT</version>
     <name>Cleanvoice.ai Client</name>
     <description>
         A Java and Spring Boot autoconfiguration for the Cleanvoice.ai API.
     </description>
     <url>
-		https://cleanvoice.ai
-	</url>
+        https://cleanvoice.ai
+    </url>
 
     <developers>
         <developer>
@@ -35,12 +35,10 @@
             <id>ossrh</id>
             <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
-
         <repository>
             <id>ossrh</id>
             <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
-
     </distributionManagement>
     <licenses>
         <license>
