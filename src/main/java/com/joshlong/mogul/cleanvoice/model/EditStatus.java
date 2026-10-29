@@ -9,8 +9,34 @@ import com.fasterxml.jackson.annotation.JsonCreator;
  */
 public enum EditStatus {
 
-	PENDING, STARTED, PREPROCESSING, CLASSIFICATION, EDITING, POSTPROCESSING, EXPORT, RETRY, SUCCESS, FAILURE, UNKNOWN;
+	/** Queued. */
+	PENDING,
+	/** Picked up by a worker. */
+	STARTED,
+	/** Preparing the input. */
+	PREPROCESSING,
+	/** Detecting what to edit. */
+	CLASSIFICATION,
+	/** Applying edits. */
+	EDITING,
+	/** Finishing up; not terminal. */
+	POSTPROCESSING,
+	/** Writing the output. */
+	EXPORT,
+	/** Being retried after an error. */
+	RETRY,
+	/** Finished; the result is available. */
+	SUCCESS,
+	/** Failed. */
+	FAILURE,
+	/** A value this client doesn't recognise. */
+	UNKNOWN;
 
+	/**
+	 * Parses a status value case-insensitively.
+	 * @param value the raw value, may be {@code null}
+	 * @return the matching status, or {@link #UNKNOWN}
+	 */
 	@JsonCreator
 	public static EditStatus from(String value) {
 		if (value == null) {
@@ -27,6 +53,7 @@ public enum EditStatus {
 	/**
 	 * {@code SUCCESS} or {@code FAILURE}. Note {@code POSTPROCESSING} is <em>not</em>
 	 * terminal.
+	 * @return whether the job has finished
 	 */
 	public boolean isTerminal() {
 		return this == SUCCESS || this == FAILURE;

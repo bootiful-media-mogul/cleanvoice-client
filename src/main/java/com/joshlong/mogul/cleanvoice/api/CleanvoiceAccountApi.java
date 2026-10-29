@@ -15,6 +15,7 @@ public interface CleanvoiceAccountApi {
 
 	/**
 	 * {@code GET /v1/account} — 200 means the key is valid; 401 means it was rejected.
+	 * @return the account, including remaining credit
 	 */
 	@GetExchange("/v1/account")
 	Account account();

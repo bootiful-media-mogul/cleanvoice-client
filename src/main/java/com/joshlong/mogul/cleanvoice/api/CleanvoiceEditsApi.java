@@ -21,12 +21,18 @@ import org.springframework.web.service.annotation.PostExchange;
 @HttpExchange(url = "/v2/edits", accept = "application/json")
 public interface CleanvoiceEditsApi {
 
-	/** {@code POST /v2/edits} — submits an asynchronous edit job. */
+	/**
+	 * {@code POST /v2/edits} — submits an asynchronous edit job.
+	 * @param request the request body
+	 * @return the id of the new edit
+	 */
 	@PostExchange(contentType = "application/json")
 	EditCreated create(@RequestBody EditRequest request);
 
 	/**
 	 * {@code GET /v2/edits/{id}} — current status and, once {@code SUCCESS}, the result.
+	 * @param editId the edit id
+	 * @return the edit
 	 */
 	@GetExchange("/{editId}")
 	Edit retrieve(@PathVariable String editId);
@@ -34,6 +40,7 @@ public interface CleanvoiceEditsApi {
 	/**
 	 * {@code DELETE /v2/edits/{id}} — permanently deletes the edit and its
 	 * source/processed files.
+	 * @param editId the edit id
 	 */
 	@DeleteExchange("/{editId}")
 	void delete(@PathVariable String editId);

@@ -29,9 +29,15 @@ import org.springframework.web.service.registry.ImportHttpServices;
 @ImportHttpServices(group = CleanvoiceAutoConfiguration.STORAGE_GROUP, types = SignedUrlStorageApi.class)
 public class CleanvoiceAutoConfiguration {
 
+	/** Name of the HTTP service group for the Cleanvoice REST API. */
 	public static final String API_GROUP = "cleanvoice";
 
+	/** Name of the HTTP service group for uploads to pre-signed storage URLs. */
 	public static final String STORAGE_GROUP = "cleanvoice-storage";
+
+	/** Creates the auto-configuration; instantiated by Spring Boot. */
+	public CleanvoiceAutoConfiguration() {
+	}
 
 	@Bean
 	RestClientHttpServiceGroupConfigurer cleanvoiceGroupConfigurer(CleanvoiceProperties properties) {

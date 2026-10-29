@@ -15,6 +15,8 @@ public interface CleanvoiceUploadsApi {
 
 	/**
 	 * {@code POST /v2/upload?filename=...} — returns a pre-signed PUT URL for the file.
+	 * @param filename the name of the file to upload
+	 * @return the pre-signed upload URL
 	 */
 	@PostExchange("/v2/upload")
 	SignedUpload requestUploadUrl(@RequestParam String filename);

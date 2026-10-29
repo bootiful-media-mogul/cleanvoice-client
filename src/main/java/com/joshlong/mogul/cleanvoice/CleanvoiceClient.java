@@ -41,6 +41,14 @@ public class CleanvoiceClient {
 
 	private final CleanvoiceProperties.Polling polling;
 
+	/**
+	 * Creates a client from the underlying HTTP interfaces.
+	 * @param edits the edits API
+	 * @param uploads the uploads API
+	 * @param account the account API
+	 * @param storage the pre-signed storage API
+	 * @param polling polling settings for {@link #awaitCompletion}
+	 */
 	public CleanvoiceClient(CleanvoiceEditsApi edits, CleanvoiceUploadsApi uploads, CleanvoiceAccountApi account,
 			SignedUrlStorageApi storage, CleanvoiceProperties.Polling polling) {
 		this.edits = edits;
@@ -56,6 +64,7 @@ public class CleanvoiceClient {
 	/**
 	 * Verifies the key and returns remaining credit. Throws
 	 * {@code HttpClientErrorException.Unauthorized} on a bad key.
+	 * @return the account, including remaining credit
 	 */
 	public Account account() {
 		return account.account();
@@ -67,6 +76,8 @@ public class CleanvoiceClient {
 	/**
 	 * Uploads a local file (steps 1 and 2 of the upload flow) and returns the URL to pass
 	 * in {@code input.files}.
+	 * @param file the local file to upload
+	 * @return the URL of the uploaded file
 	 */
 	public String upload(Path file) {
 		Assert.isTrue(Files.isRegularFile(file), () -> "Not a readable file: " + file);
@@ -76,6 +87,9 @@ public class CleanvoiceClient {
 	/**
 	 * Uploads any {@link Resource} (classpath, byte array, stream…) under the given file
 	 * name.
+	 * @param resource the content to upload
+	 * @param filename the file name; also used to infer the content type
+	 * @return the URL of the uploaded file
 	 */
 	public String upload(Resource resource, String filename) {
 		Assert.hasText(filename, "filename must not be empty");
@@ -88,26 +102,51 @@ public class CleanvoiceClient {
 	// ---- edits
 	// -------------------------------------------------------------------------------
 
+	/**
+	 * Submits a raw edit request.
+	 * @param request the request body
+	 * @return the id of the new edit
+	 */
 	public EditCreated createEdit(EditRequest request) {
 		return edits.create(request);
 	}
 
-	/** Submits a job for a file already reachable at a public / direct-download URL. */
+	/**
+	 * Submits a job for a file already reachable at a public / direct-download URL.
+	 * @param fileUrl the URL of the file
+	 * @param config the edit settings
+	 * @return the id of the new edit
+	 */
 	public EditCreated createEdit(String fileUrl, EditConfig config) {
 		return edits.create(EditRequest.of(fileUrl, config));
 	}
 
-	/** Uploads a local file, then submits the edit (all three steps). */
+	/**
+	 * Uploads a local file, then submits the edit (all three steps).
+	 * @param localFile the local file
+	 * @param config the edit settings
+	 * @return the id of the new edit
+	 */
 	public EditCreated createEdit(Path localFile, EditConfig config) {
 		return createEdit(upload(localFile), config);
 	}
 
-	/** Uploads each local track and submits them as one multi-track edit. */
+	/**
+	 * Uploads each local track and submits them as one multi-track edit.
+	 * @param localTracks the tracks of a single recording
+	 * @param config the edit settings
+	 * @return the id of the new edit
+	 */
 	public EditCreated createMultitrackEdit(List<Path> localTracks, EditConfig config) {
 		List<String> urls = localTracks.stream().map(this::upload).toList();
 		return edits.create(EditRequest.multitrack(urls, config));
 	}
 
+	/**
+	 * Fetches the current state of an edit.
+	 * @param editId the edit id
+	 * @return the edit's status and, once {@code SUCCESS}, its result
+	 */
 	public Edit getEdit(String editId) {
 		return edits.retrieve(editId);
 	}
@@ -115,6 +154,7 @@ public class CleanvoiceClient {
 	/**
 	 * Permanently deletes the edit and its files (otherwise they expire 7 days after
 	 * processing).
+	 * @param editId the edit id
 	 */
 	public void deleteEdit(String editId) {
 		edits.delete(editId);
@@ -124,8 +164,12 @@ public class CleanvoiceClient {
 	 * Polls until the job reaches {@code SUCCESS} or {@code FAILURE}: waits the initial
 	 * delay (default 30s), then polls every interval (default 10s). Rate-limit responses
 	 * back off exponentially up to {@code maxBackoff}.
+	 * @param editId the edit id
+	 * @param timeout how long to wait in total
+	 * @return the finished edit
 	 * @throws CleanvoiceEditFailedException if the job fails
 	 * @throws TimeoutException if it isn't done within {@code timeout}
+	 * @throws InterruptedException if the thread is interrupted while waiting
 	 */
 	public Edit awaitCompletion(String editId, Duration timeout) throws InterruptedException, TimeoutException {
 		Instant deadline = Instant.now().plus(timeout);
@@ -150,7 +194,16 @@ public class CleanvoiceClient {
 		}
 	}
 
-	/** Upload, submit, and wait — the whole flow in one call. */
+	/**
+	 * Upload, submit, and wait — the whole flow in one call.
+	 * @param localFile the local file
+	 * @param config the edit settings
+	 * @param timeout how long to wait for the job to finish
+	 * @return the finished edit
+	 * @throws CleanvoiceEditFailedException if the job fails
+	 * @throws TimeoutException if it isn't done within {@code timeout}
+	 * @throws InterruptedException if the thread is interrupted while waiting
+	 */
 	public Edit process(Path localFile, EditConfig config, Duration timeout)
 			throws InterruptedException, TimeoutException {
 		return awaitCompletion(createEdit(localFile, config).id(), timeout);

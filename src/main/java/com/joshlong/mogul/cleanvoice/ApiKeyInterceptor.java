@@ -13,10 +13,15 @@ import java.io.IOException;
  */
 public final class ApiKeyInterceptor implements ClientHttpRequestInterceptor {
 
+	/** Name of the header that carries the API key. */
 	public static final String HEADER = "X-API-Key";
 
 	private final String apiKey;
 
+	/**
+	 * Creates an interceptor that sends the given key.
+	 * @param apiKey the Cleanvoice API key; must not be empty
+	 */
 	public ApiKeyInterceptor(String apiKey) {
 		Assert.hasText(apiKey, "cleanvoice.api-key must be set (e.g. cleanvoice.api-key=${CLEANVOICE_API_KEY})");
 		this.apiKey = apiKey;

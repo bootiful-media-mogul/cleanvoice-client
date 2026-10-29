@@ -24,6 +24,12 @@ import java.net.URI;
  */
 public interface SignedUrlStorageApi {
 
+	/**
+	 * PUTs the file to the pre-signed URL.
+	 * @param signedUrl the absolute pre-signed URL, used verbatim
+	 * @param contentType the file's content type
+	 * @param file the file content, streamed
+	 */
 	@PutExchange
 	void put(URI signedUrl, @RequestHeader(HttpHeaders.CONTENT_TYPE) String contentType, @RequestBody Resource file);
 
