@@ -160,7 +160,7 @@ public class CleanvoiceClient {
 		if (Instant.now().plus(pause).isAfter(deadline)) {
 			throw new TimeoutException("Cleanvoice edit did not finish before the deadline");
 		}
-		Thread.sleep(pause);
+		Thread.sleep(pause.toMillis());
 	}
 
 	private static Duration min(Duration a, Duration b) {
