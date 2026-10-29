@@ -13,18 +13,18 @@ import java.net.URI;
  * <p>
  * This interface lives in its own HTTP service group on purpose:
  * <ul>
- * <li>the target is a third-party storage host, so the {@code X-API-Key} must never be sent there;</li>
- * <li>a {@code ClientHttpRequestInterceptor} buffers the whole request body in memory, which is
- * fine for small JSON payloads but not for hour-long audio/video files. Without an interceptor the
- * {@link Resource} body is streamed.</li>
+ * <li>the target is a third-party storage host, so the {@code X-API-Key} must never be
+ * sent there;</li>
+ * <li>a {@code ClientHttpRequestInterceptor} buffers the whole request body in memory,
+ * which is fine for small JSON payloads but not for hour-long audio/video files. Without
+ * an interceptor the {@link Resource} body is streamed.</li>
  * </ul>
- * The {@link URI} argument is absolute and used verbatim, so the signature in the query string is not
- * re-encoded.
+ * The {@link URI} argument is absolute and used verbatim, so the signature in the query
+ * string is not re-encoded.
  */
 public interface SignedUrlStorageApi {
 
-    @PutExchange
-    void put(URI signedUrl,
-             @RequestHeader(HttpHeaders.CONTENT_TYPE) String contentType,
-             @RequestBody Resource file);
+	@PutExchange
+	void put(URI signedUrl, @RequestHeader(HttpHeaders.CONTENT_TYPE) String contentType, @RequestBody Resource file);
+
 }

@@ -13,19 +13,20 @@ import java.io.IOException;
  */
 public final class ApiKeyInterceptor implements ClientHttpRequestInterceptor {
 
-    public static final String HEADER = "X-API-Key";
+	public static final String HEADER = "X-API-Key";
 
-    private final String apiKey;
+	private final String apiKey;
 
-    public ApiKeyInterceptor(String apiKey) {
-        Assert.hasText(apiKey, "cleanvoice.api-key must be set (e.g. cleanvoice.api-key=${CLEANVOICE_API_KEY})");
-        this.apiKey = apiKey;
-    }
+	public ApiKeyInterceptor(String apiKey) {
+		Assert.hasText(apiKey, "cleanvoice.api-key must be set (e.g. cleanvoice.api-key=${CLEANVOICE_API_KEY})");
+		this.apiKey = apiKey;
+	}
 
-    @Override
-    public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution)
-            throws IOException {
-        request.getHeaders().set(HEADER, apiKey);
-        return execution.execute(request, body);
-    }
+	@Override
+	public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution)
+			throws IOException {
+		request.getHeaders().set(HEADER, apiKey);
+		return execution.execute(request, body);
+	}
+
 }

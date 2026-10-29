@@ -9,7 +9,7 @@ import java.util.Map;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record Account(Credit credit, Map<String, Object> meta) {
 
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public record Credit(BigDecimal total, BigDecimal subscription, BigDecimal payg) {
-    }
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	public record Credit(BigDecimal total, BigDecimal subscription, BigDecimal payg) {
+	}
 }

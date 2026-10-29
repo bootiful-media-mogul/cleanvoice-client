@@ -15,15 +15,11 @@ import java.time.Duration;
  * </pre>
  */
 @ConfigurationProperties("cleanvoice")
-public record CleanvoiceProperties(
-        String apiKey,
-        @DefaultValue("https://api.cleanvoice.ai") URI baseUrl,
-        @DefaultValue Polling polling) {
+public record CleanvoiceProperties(String apiKey, @DefaultValue("https://api.cleanvoice.ai") URI baseUrl,
+		@DefaultValue Polling polling) {
 
-    public record Polling(
-            @DefaultValue("30s") Duration initialDelay,
-            @DefaultValue("10s") Duration interval,
-            /** Upper bound for exponential backoff after a rate-limit response. */
-            @DefaultValue("30s") Duration maxBackoff) {
-    }
+	public record Polling(@DefaultValue("30s") Duration initialDelay, @DefaultValue("10s") Duration interval,
+			/** Upper bound for exponential backoff after a rate-limit response. */
+			@DefaultValue("30s") Duration maxBackoff) {
+	}
 }

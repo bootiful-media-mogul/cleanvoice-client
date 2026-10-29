@@ -13,7 +13,10 @@ import org.springframework.web.service.annotation.PostExchange;
 @HttpExchange(accept = "application/json")
 public interface CleanvoiceUploadsApi {
 
-    /** {@code POST /v2/upload?filename=...} — returns a pre-signed PUT URL for the file. */
-    @PostExchange("/v2/upload")
-    SignedUpload requestUploadUrl(@RequestParam String filename);
+	/**
+	 * {@code POST /v2/upload?filename=...} — returns a pre-signed PUT URL for the file.
+	 */
+	@PostExchange("/v2/upload")
+	SignedUpload requestUploadUrl(@RequestParam String filename);
+
 }
