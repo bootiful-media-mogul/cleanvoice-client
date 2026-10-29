@@ -17,10 +17,10 @@ import org.springframework.http.MediaTypeFactory;
 import org.springframework.util.Assert;
 import org.springframework.web.client.HttpClientErrorException;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
@@ -80,8 +80,22 @@ public class CleanvoiceClient {
 	 * @return the URL of the uploaded file
 	 */
 	public String upload(Path file) {
-		Assert.isTrue(Files.isRegularFile(file), () -> "Not a readable file: " + file);
-		return upload(new FileSystemResource(file), file.getFileName().toString());
+		return upload(new FileSystemResource(file));
+	}
+
+	/**
+	 * Uploads a {@link Resource} under its own {@link Resource#getFilename() file name}.
+	 * Works for file, classpath and URL resources; for resources without a name (byte
+	 * arrays, streams) use {@link #upload(Resource, String)}.
+	 * @param resource the content to upload
+	 * @return the URL of the uploaded file
+	 */
+	public String upload(Resource resource) {
+		Assert.notNull(resource, "resource must not be null");
+		Assert.isTrue(resource.isReadable(), () -> "Not a readable resource: " + resource);
+		String filename = resource.getFilename();
+		Assert.hasText(filename, () -> "Resource has no file name, use upload(Resource, String): " + resource);
+		return upload(resource, filename);
 	}
 
 	/**
@@ -128,7 +142,18 @@ public class CleanvoiceClient {
 	 * @return the id of the new edit
 	 */
 	public EditCreated createEdit(Path localFile, EditConfig config) {
-		return createEdit(upload(localFile), config);
+		return createEdit(new FileSystemResource(localFile), config);
+	}
+
+	/**
+	 * Uploads a {@link Resource}, then submits the edit (all three steps). The resource
+	 * must have a file name; see {@link #upload(Resource)}.
+	 * @param resource the content to edit
+	 * @param config the edit settings
+	 * @return the id of the new edit
+	 */
+	public EditCreated createEdit(Resource resource, EditConfig config) {
+		return createEdit(upload(resource), config);
 	}
 
 	/**
@@ -138,7 +163,18 @@ public class CleanvoiceClient {
 	 * @return the id of the new edit
 	 */
 	public EditCreated createMultitrackEdit(List<Path> localTracks, EditConfig config) {
-		List<String> urls = localTracks.stream().map(this::upload).toList();
+		return createMultitrackEdit(localTracks.stream().map(FileSystemResource::new).toList(), config);
+	}
+
+	/**
+	 * Uploads each track and submits them as one multi-track edit. Each resource must
+	 * have a file name; see {@link #upload(Resource)}.
+	 * @param tracks the tracks of a single recording
+	 * @param config the edit settings
+	 * @return the id of the new edit
+	 */
+	public EditCreated createMultitrackEdit(Collection<? extends Resource> tracks, EditConfig config) {
+		List<String> urls = tracks.stream().map(this::upload).toList();
 		return edits.create(EditRequest.multitrack(urls, config));
 	}
 
@@ -206,7 +242,23 @@ public class CleanvoiceClient {
 	 */
 	public Edit process(Path localFile, EditConfig config, Duration timeout)
 			throws InterruptedException, TimeoutException {
-		return awaitCompletion(createEdit(localFile, config).id(), timeout);
+		return process(new FileSystemResource(localFile), config, timeout);
+	}
+
+	/**
+	 * Upload, submit, and wait — the whole flow in one call. The resource must have a
+	 * file name; see {@link #upload(Resource)}.
+	 * @param resource the content to edit
+	 * @param config the edit settings
+	 * @param timeout how long to wait for the job to finish
+	 * @return the finished edit
+	 * @throws CleanvoiceEditFailedException if the job fails
+	 * @throws TimeoutException if it isn't done within {@code timeout}
+	 * @throws InterruptedException if the thread is interrupted while waiting
+	 */
+	public Edit process(Resource resource, EditConfig config, Duration timeout)
+			throws InterruptedException, TimeoutException {
+		return awaitCompletion(createEdit(resource, config).id(), timeout);
 	}
 
 	private static void sleepUntil(Instant deadline, Duration pause) throws InterruptedException, TimeoutException {
