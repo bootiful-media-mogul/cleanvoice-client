@@ -1,4 +1,4 @@
-package com.joshlong.mogul.cleanvoice.model;
+package com.joshlong.cleanvoice.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -17,7 +17,7 @@ public record SignedUpload(String signedUrl) {
 	 * @return the upload URL
 	 */
 	public URI uploadUri() {
-		return URI.create(signedUrl);
+		return URI.create(this.signedUrl);
 	}
 
 	/**
@@ -26,7 +26,7 @@ public record SignedUpload(String signedUrl) {
 	 * @return the file URL
 	 */
 	public String fileUrl() {
-		int q = signedUrl.indexOf('?');
-		return q < 0 ? signedUrl : signedUrl.substring(0, q);
+		var q = this.signedUrl.indexOf('?');
+		return q < 0 ? this.signedUrl : this.signedUrl.substring(0, q);
 	}
 }

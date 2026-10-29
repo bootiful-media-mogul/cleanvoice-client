@@ -1,6 +1,6 @@
-package com.joshlong.mogul.cleanvoice.api;
+package com.joshlong.cleanvoice.api;
 
-import com.joshlong.mogul.cleanvoice.model.SignedUpload;
+import com.joshlong.cleanvoice.model.SignedUpload;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.service.annotation.HttpExchange;
 import org.springframework.web.service.annotation.PostExchange;

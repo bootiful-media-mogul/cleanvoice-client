@@ -1,8 +1,8 @@
-package com.joshlong.mogul.cleanvoice.api;
+package com.joshlong.cleanvoice.api;
 
-import com.joshlong.mogul.cleanvoice.model.Edit;
-import com.joshlong.mogul.cleanvoice.model.EditCreated;
-import com.joshlong.mogul.cleanvoice.model.EditRequest;
+import com.joshlong.cleanvoice.model.Edit;
+import com.joshlong.cleanvoice.model.EditCreated;
+import com.joshlong.cleanvoice.model.EditRequest;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.service.annotation.DeleteExchange;

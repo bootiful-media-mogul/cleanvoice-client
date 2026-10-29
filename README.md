@@ -62,8 +62,22 @@ ApplicationRunner demo(CleanvoiceClient cleanvoice) {
 ```
 
 Already-hosted file: `cleanvoice.createEdit("https://example.com/episode.mp3", EditConfig.enhance())`.
+The `URI`/`URL` overloads of `createEdit` and `process` do the same, and so does an `http(s)` `UrlResource`:
+none of them upload. (`file:` and `jar:` URLs still get uploaded, since Cleanvoice can't reach them.)
 Multi-track: `cleanvoice.createMultitrackEdit(List.of(hostMic, guestMic), config)`.
 Video: set `.video(true)` or you'll only get audio back.
+
+## Debug logging
+
+The client logs through SLF4J (Logback in a normal Spring Boot app). It's quiet by default; to see uploads,
+submitted edits, every HTTP call to the API (method, URL, status, timing) and each status change while polling:
+
+```properties
+logging.level.com.joshlong.cleanvoice=debug
+# or trace, to also log polls where the status didn't change
+```
+
+The API key and the signature on pre-signed upload URLs are never logged.
 
 ## Notes
 
@@ -71,5 +85,6 @@ Video: set `.video(true)` or you'll only get audio back.
   whose `@JsonValue` emits `true`/`false` or the string.
 - `social_content` comes back as `[]` when off and as an object when on; `Edit.Result.socialContent()`
   gives a typed `Optional`.
+- `summarization` and `transcription` also come back as `[]` when not requested; they map to `null`.
 - Unknown statuses map to `EditStatus.UNKNOWN`; `POSTPROCESSING` is not terminal.
 - Rate limits: 30/min for create and upload (100 enterprise), 300/min for polling.

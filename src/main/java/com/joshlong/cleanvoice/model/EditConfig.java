@@ -1,4 +1,4 @@
-package com.joshlong.mogul.cleanvoice.model;
+package com.joshlong.cleanvoice.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -111,7 +111,7 @@ public record EditConfig(
 		 */
 		@JsonValue
 		public Object value() {
-			return value;
+			return this.value;
 		}
 
 	}
@@ -143,7 +143,7 @@ public record EditConfig(
 		 */
 		@JsonValue
 		public Object value() {
-			return value;
+			return this.value;
 		}
 
 	}
@@ -170,7 +170,7 @@ public record EditConfig(
 		 */
 		@JsonValue
 		public Object value() {
-			return value;
+			return this.value;
 		}
 
 	}
@@ -208,7 +208,7 @@ public record EditConfig(
 		 */
 		@JsonValue
 		public String value() {
-			return value;
+			return this.value;
 		}
 
 	}
@@ -288,7 +288,7 @@ public record EditConfig(
 		 * @return this builder
 		 */
 		public Builder breath(boolean v) {
-			return breath(v ? Breath.ON : Breath.OFF);
+			return this.breath(v ? Breath.ON : Breath.OFF);
 		}
 
 		/**
@@ -338,7 +338,7 @@ public record EditConfig(
 		 * @return this builder
 		 */
 		public Builder removeNoise(boolean v) {
-			return removeNoise(v ? NoiseRemoval.ON : NoiseRemoval.OFF);
+			return this.removeNoise(v ? NoiseRemoval.ON : NoiseRemoval.OFF);
 		}
 
 		/**
@@ -357,7 +357,7 @@ public record EditConfig(
 		 * @return this builder
 		 */
 		public Builder studioSound(boolean v) {
-			return studioSound(v ? StudioSound.ON : StudioSound.OFF);
+			return this.studioSound(v ? StudioSound.ON : StudioSound.OFF);
 		}
 
 		/**
@@ -512,9 +512,11 @@ public record EditConfig(
 		 * @return the config
 		 */
 		public EditConfig build() {
-			return new EditConfig(fillers, longSilences, mouthSounds, breath, stutters, hesitations, muted, removeNoise,
-					studioSound, normalize, keepMusic, autoeq, exportFormat, targetLufs, muteLufs, exportTimestamps,
-					transcription, summarize, socialContent, signedUrl, merge, audioForEdl, video);
+			return new EditConfig(this.fillers, this.longSilences, this.mouthSounds, this.breath, this.stutters,
+					this.hesitations, this.muted, this.removeNoise, this.studioSound, this.normalize, this.keepMusic,
+					this.autoeq, this.exportFormat, this.targetLufs, this.muteLufs, this.exportTimestamps,
+					this.transcription, this.summarize, this.socialContent, this.signedUrl, this.merge,
+					this.audioForEdl, this.video);
 		}
 
 	}

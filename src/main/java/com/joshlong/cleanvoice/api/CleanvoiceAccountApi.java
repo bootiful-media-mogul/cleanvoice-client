@@ -1,6 +1,6 @@
-package com.joshlong.mogul.cleanvoice.api;
+package com.joshlong.cleanvoice.api;
 
-import com.joshlong.mogul.cleanvoice.model.Account;
+import com.joshlong.cleanvoice.model.Account;
 import org.springframework.web.service.annotation.GetExchange;
 import org.springframework.web.service.annotation.HttpExchange;
 

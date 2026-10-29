@@ -1,7 +1,8 @@
-package com.joshlong.mogul.cleanvoice.model;
+package com.joshlong.cleanvoice.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import tools.jackson.databind.annotation.JsonDeserialize;
 
 import java.util.List;
 import java.util.Map;
@@ -23,7 +24,7 @@ public record Edit(@JsonProperty("task_id") String taskId, EditStatus status, Re
 	 * @return {@code true} if the status is {@code SUCCESS}
 	 */
 	public boolean isSuccess() {
-		return status == EditStatus.SUCCESS;
+		return this.status == EditStatus.SUCCESS;
 	}
 
 	/**
@@ -31,7 +32,7 @@ public record Edit(@JsonProperty("task_id") String taskId, EditStatus status, Re
 	 * @return {@code true} if the status is {@code FAILURE}
 	 */
 	public boolean isFailure() {
-		return status == EditStatus.FAILURE;
+		return this.status == EditStatus.FAILURE;
 	}
 
 	/**
@@ -39,7 +40,7 @@ public record Edit(@JsonProperty("task_id") String taskId, EditStatus status, Re
 	 * @return {@code true} if the status is terminal
 	 */
 	public boolean isDone() {
-		return status != null && status.isTerminal();
+		return this.status != null && this.status.isTerminal();
 	}
 
 	/**
@@ -48,8 +49,10 @@ public record Edit(@JsonProperty("task_id") String taskId, EditStatus status, Re
 	 * @param video whether the output is a video
 	 * @param filename the output file name
 	 * @param downloadUrl time-limited link to the cleaned file; download it promptly
-	 * @param transcription the transcript, if requested
-	 * @param summarization the summary, if requested
+	 * @param transcription the transcript, or {@code null} if not requested (the API
+	 * sends {@code []})
+	 * @param summarization the summary, or {@code null} if not requested (the API sends
+	 * {@code []})
 	 * @param socialContentRaw empty array when not requested, an object
 	 * (newsletter/twitter_thread/linkedin) when it is; see {@link #socialContent()}
 	 * @param mergedAudioUrl the merged audio, for multi-track jobs with {@code merge}
@@ -58,7 +61,8 @@ public record Edit(@JsonProperty("task_id") String taskId, EditStatus status, Re
 	 */
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	public record Result(Boolean video, String filename, @JsonProperty("download_url") String downloadUrl,
-			Transcription transcription, Summarization summarization,
+			@JsonDeserialize(using = EmptyArrayAsNullDeserializer.class) Transcription transcription,
+			@JsonDeserialize(using = EmptyArrayAsNullDeserializer.class) Summarization summarization,
 			@JsonProperty("social_content") Object socialContentRaw,
 			@JsonProperty("merged_audio_url") Object mergedAudioUrl,
 			@JsonProperty("timestamps_markers_urls") Object timestampsMarkersUrls,
@@ -70,7 +74,7 @@ public record Edit(@JsonProperty("task_id") String taskId, EditStatus status, Re
 		 * @return the social content, if present
 		 */
 		public Optional<SocialContent> socialContent() {
-			if (socialContentRaw instanceof Map<?, ?> map && !map.isEmpty()) {
+			if (this.socialContentRaw instanceof Map<?, ?> map && !map.isEmpty()) {
 				return Optional.of(new SocialContent(asString(map.get("newsletter")),
 						asString(map.get("twitter_thread")), asString(map.get("linkedin"))));
 			}

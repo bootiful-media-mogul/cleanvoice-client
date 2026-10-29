@@ -1,4 +1,4 @@
-package com.joshlong.mogul.cleanvoice.model;
+package com.joshlong.cleanvoice.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 

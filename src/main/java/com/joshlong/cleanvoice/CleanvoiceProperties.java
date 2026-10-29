@@ -1,4 +1,4 @@
-package com.joshlong.mogul.cleanvoice;
+package com.joshlong.cleanvoice;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.bind.DefaultValue;

@@ -1,6 +1,6 @@
-package com.joshlong.mogul.cleanvoice;
+package com.joshlong.cleanvoice;
 
-import com.joshlong.mogul.cleanvoice.model.Edit;
+import com.joshlong.cleanvoice.model.Edit;
 
 /**
  * Thrown by {@link CleanvoiceClient#awaitCompletion} when a job ends in {@code FAILURE}.
@@ -23,7 +23,7 @@ public class CleanvoiceEditFailedException extends RuntimeException {
 	 * @return the edit, as last reported by the server
 	 */
 	public Edit edit() {
-		return edit;
+		return this.edit;
 	}
 
 }

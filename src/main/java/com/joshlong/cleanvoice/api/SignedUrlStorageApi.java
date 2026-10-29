@@ -1,4 +1,4 @@
-package com.joshlong.mogul.cleanvoice.api;
+package com.joshlong.cleanvoice.api;
 
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
