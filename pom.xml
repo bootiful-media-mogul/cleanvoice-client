@@ -47,10 +47,10 @@
         </license>
     </licenses>
     <scm>
-        <connection>scm:git:git://github.com/bootiful-podcast/podbean-client.git</connection>
-        <developerConnection>scm:git:ssh://github.com/bootiful-podcast/podbean-client.git
+        <connection>scm:git:git://github.com/joshlong/cleanvoice-client.git</connection>
+        <developerConnection>scm:git:ssh://github.com/joshlong/cleanvoice-client.git
         </developerConnection>
-        <url>https://github.com/bootiful-podcast/podbean-client/tree/master</url>
+        <url>https://github.com/joshlong/cleanvoice-client/tree/main</url>
     </scm>
 
     <properties>
