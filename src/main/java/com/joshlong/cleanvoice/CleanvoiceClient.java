@@ -14,6 +14,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.MediaTypeFactory;
 import org.springframework.util.Assert;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.support.RestClientAdapter;
+import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -32,7 +35,7 @@ import java.util.concurrent.TimeoutException;
  * flow, and polling until a job finishes. The underlying interfaces are beans too, if you
  * need raw access.
  */
-public class CleanvoiceClient {
+public class CleanvoiceClient implements Cleanvoice {
 
 	private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -65,6 +68,33 @@ public class CleanvoiceClient {
 				this.polling.initialDelay(), this.polling.interval(), this.polling.maxBackoff());
 	}
 
+	/**
+	 * Builds a client for one API key, outside of Spring Boot's HTTP service groups. This
+	 * is for applications that need more than one key, such as a multi-tenant application
+	 * whose users each bring their own; most applications should inject the
+	 * auto-configured client instead.
+	 * <p>
+	 * The key is only ever sent to {@code baseUrl}. Uploads to pre-signed storage URLs
+	 * use a client without the key and without an interceptor, so large files stream.
+	 * @param restClientBuilder the builder to start from; it is cloned, not modified
+	 * @param apiKey the Cleanvoice API key
+	 * @param baseUrl the Cleanvoice API's base URL
+	 * @param polling polling settings for {@link #awaitCompletion}
+	 * @return a client that uses {@code apiKey}
+	 */
+	public static CleanvoiceClient create(RestClient.Builder restClientBuilder, String apiKey, URI baseUrl,
+			CleanvoiceProperties.Polling polling) {
+		var api = HttpServiceProxyFactory.builderFor(RestClientAdapter.create(restClientBuilder.clone()
+			.baseUrl(baseUrl.toString())
+			.requestInterceptor(new ApiKeyInterceptor(apiKey))
+			.build())).build();
+		var storage = HttpServiceProxyFactory.builderFor(RestClientAdapter.create(restClientBuilder.clone().build()))
+			.build();
+		return new CleanvoiceClient(api.createClient(CleanvoiceEditsApi.class),
+				api.createClient(CleanvoiceUploadsApi.class), api.createClient(CleanvoiceAccountApi.class),
+				storage.createClient(SignedUrlStorageApi.class), polling);
+	}
+
 	// ---- account
 	// -----------------------------------------------------------------------------
 
@@ -73,6 +103,7 @@ public class CleanvoiceClient {
 	 * {@code HttpClientErrorException.Unauthorized} on a bad key.
 	 * @return the account, including remaining credit
 	 */
+	@Override
 	public Account account() {
 		var result = this.account.account();
 		if (this.log.isDebugEnabled()) {
@@ -92,6 +123,7 @@ public class CleanvoiceClient {
 	 * @param file the local file to upload
 	 * @return the URL of the uploaded file
 	 */
+	@Override
 	public String upload(Path file) {
 		return this.upload(new FileSystemResource(file));
 	}
@@ -103,6 +135,7 @@ public class CleanvoiceClient {
 	 * @param resource the content to upload
 	 * @return the URL of the uploaded file
 	 */
+	@Override
 	public String upload(Resource resource) {
 		Assert.notNull(resource, "resource must not be null");
 		Assert.isTrue(resource.isReadable(), () -> "Not a readable resource: " + resource);
@@ -118,6 +151,7 @@ public class CleanvoiceClient {
 	 * @param filename the file name; also used to infer the content type
 	 * @return the URL of the uploaded file
 	 */
+	@Override
 	public String upload(Resource resource, String filename) {
 		Assert.hasText(filename, "filename must not be empty");
 		var contentType = MediaTypeFactory.getMediaType(filename).orElse(MediaType.APPLICATION_OCTET_STREAM);
@@ -140,6 +174,7 @@ public class CleanvoiceClient {
 	 * @param request the request body
 	 * @return the id of the new edit
 	 */
+	@Override
 	public EditCreated createEdit(EditRequest request) {
 		return this.submit(request);
 	}
@@ -150,6 +185,7 @@ public class CleanvoiceClient {
 	 * @param config the edit settings
 	 * @return the id of the new edit
 	 */
+	@Override
 	public EditCreated createEdit(String fileUrl, EditConfig config) {
 		return this.submit(EditRequest.of(fileUrl, config));
 	}
@@ -162,6 +198,7 @@ public class CleanvoiceClient {
 	 * @param config the edit settings
 	 * @return the id of the new edit
 	 */
+	@Override
 	public EditCreated createEdit(URI fileUri, EditConfig config) {
 		Assert.notNull(fileUri, "fileUri must not be null");
 		return this.createEdit(UrlResource.from(fileUri), config);
@@ -175,6 +212,7 @@ public class CleanvoiceClient {
 	 * @param config the edit settings
 	 * @return the id of the new edit
 	 */
+	@Override
 	public EditCreated createEdit(URL fileUrl, EditConfig config) {
 		Assert.notNull(fileUrl, "fileUrl must not be null");
 		return this.createEdit(new UrlResource(fileUrl), config);
@@ -186,6 +224,7 @@ public class CleanvoiceClient {
 	 * @param config the edit settings
 	 * @return the id of the new edit
 	 */
+	@Override
 	public EditCreated createEdit(Path localFile, EditConfig config) {
 		return this.createEdit(new FileSystemResource(localFile), config);
 	}
@@ -199,6 +238,7 @@ public class CleanvoiceClient {
 	 * @param config the edit settings
 	 * @return the id of the new edit
 	 */
+	@Override
 	public EditCreated createEdit(Resource resource, EditConfig config) {
 		return this.createEdit(this.fileUrlFor(resource), config);
 	}
@@ -209,6 +249,7 @@ public class CleanvoiceClient {
 	 * @param config the edit settings
 	 * @return the id of the new edit
 	 */
+	@Override
 	public EditCreated createMultitrackEdit(List<Path> localTracks, EditConfig config) {
 		return this.createMultitrackEdit(localTracks.stream().map(FileSystemResource::new).toList(), config);
 	}
@@ -221,6 +262,7 @@ public class CleanvoiceClient {
 	 * @param config the edit settings
 	 * @return the id of the new edit
 	 */
+	@Override
 	public EditCreated createMultitrackEdit(Collection<? extends Resource> tracks, EditConfig config) {
 		var urls = tracks.stream().map(this::fileUrlFor).toList();
 		this.log.debug("Submitting {} tracks as one multi-track edit", urls.size());
@@ -232,6 +274,7 @@ public class CleanvoiceClient {
 	 * @param editId the edit id
 	 * @return the edit's status and, once {@code SUCCESS}, its result
 	 */
+	@Override
 	public Edit getEdit(String editId) {
 		var edit = this.edits.retrieve(editId);
 		this.log.debug("Edit {} is {}", editId, edit.status());
@@ -243,6 +286,7 @@ public class CleanvoiceClient {
 	 * processing).
 	 * @param editId the edit id
 	 */
+	@Override
 	public void deleteEdit(String editId) {
 		this.edits.delete(editId);
 		this.log.debug("Deleted edit {}", editId);
@@ -259,6 +303,7 @@ public class CleanvoiceClient {
 	 * @throws TimeoutException if it isn't done within {@code timeout}
 	 * @throws InterruptedException if the thread is interrupted while waiting
 	 */
+	@Override
 	public Edit awaitCompletion(String editId, Duration timeout) throws InterruptedException, TimeoutException {
 		var started = System.nanoTime();
 		var deadline = Instant.now().plus(timeout);
@@ -316,6 +361,7 @@ public class CleanvoiceClient {
 	 * @throws TimeoutException if it isn't done within {@code timeout}
 	 * @throws InterruptedException if the thread is interrupted while waiting
 	 */
+	@Override
 	public Edit process(Path localFile, EditConfig config, Duration timeout)
 			throws InterruptedException, TimeoutException {
 		return this.process(new FileSystemResource(localFile), config, timeout);
@@ -332,6 +378,7 @@ public class CleanvoiceClient {
 	 * @throws TimeoutException if it isn't done within {@code timeout}
 	 * @throws InterruptedException if the thread is interrupted while waiting
 	 */
+	@Override
 	public Edit process(URI fileUri, EditConfig config, Duration timeout)
 			throws InterruptedException, TimeoutException {
 		return this.awaitCompletion(this.createEdit(fileUri, config).id(), timeout);
@@ -348,6 +395,7 @@ public class CleanvoiceClient {
 	 * @throws TimeoutException if it isn't done within {@code timeout}
 	 * @throws InterruptedException if the thread is interrupted while waiting
 	 */
+	@Override
 	public Edit process(URL fileUrl, EditConfig config, Duration timeout)
 			throws InterruptedException, TimeoutException {
 		return this.awaitCompletion(this.createEdit(fileUrl, config).id(), timeout);
@@ -365,6 +413,7 @@ public class CleanvoiceClient {
 	 * @throws TimeoutException if it isn't done within {@code timeout}
 	 * @throws InterruptedException if the thread is interrupted while waiting
 	 */
+	@Override
 	public Edit process(Resource resource, EditConfig config, Duration timeout)
 			throws InterruptedException, TimeoutException {
 		return this.awaitCompletion(this.createEdit(resource, config).id(), timeout);

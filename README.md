@@ -34,6 +34,21 @@ I'd also recomment you set `spring.threads.virtual.enabled=true` if you're runni
 
 `CleanvoiceClient` wraps the interfaces with the upload flow and polling.
 
+## More than one API key
+
+`CleanvoiceClient` implements the `Cleanvoice` interface, and the auto-configuration only registers it when the
+application hasn't defined a `Cleanvoice` bean of its own. A multi-tenant application whose users each bring their
+own key defines one, and builds a real client per key with `CleanvoiceClient.create(restClientBuilder, apiKey, baseUrl,
+polling)`. It then doesn't need `cleanvoice.api-key` at all.
+
+```java
+@Bean
+Cleanvoice cleanvoice(RestClient.Builder builder, CleanvoiceProperties properties, KeyLookup keys) {
+    return new MyPerUserCleanvoice(apiKey -> CleanvoiceClient.create(builder, apiKey, properties.baseUrl(),
+            properties.polling()), keys);
+}
+```
+
 ## Usage
 
 ```java

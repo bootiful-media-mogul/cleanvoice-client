@@ -24,6 +24,10 @@ import org.springframework.web.service.registry.ImportHttpServices;
  * no interceptor (so large files stream instead of being buffered).</li>
  * </ul>
  * Each interface becomes an injectable bean, and {@link CleanvoiceClient} composes them.
+ * <p>
+ * An application that defines its own {@link Cleanvoice} bean, for example one choosing a
+ * key per user, replaces the client; it then doesn't need {@code cleanvoice.api-key} at
+ * all.
  */
 @AutoConfiguration
 @EnableConfigurationProperties(CleanvoiceProperties.class)
@@ -44,13 +48,19 @@ public class CleanvoiceAutoConfiguration {
 	RestClientHttpServiceGroupConfigurer cleanvoiceGroupConfigurer(CleanvoiceProperties properties) {
 		this.log.debug("Configuring HTTP service group '{}' with base URL {}; API key {}", API_GROUP,
 				properties.baseUrl(), StringUtils.hasText(properties.apiKey()) ? "is set" : "is MISSING");
-		return groups -> groups.filterByName(API_GROUP)
-			.forEachClient((group, builder) -> builder.baseUrl(properties.baseUrl().toString())
-				.requestInterceptor(new ApiKeyInterceptor(properties.apiKey())));
+		// no key is fine when the application brings its own Cleanvoice bean; without
+		// one,
+		// every request is rejected by Cleanvoice and the log line above says why
+		var apiKey = properties.apiKey();
+		return groups -> groups.filterByName(API_GROUP).forEachClient((group, builder) -> {
+			builder.baseUrl(properties.baseUrl().toString());
+			if (StringUtils.hasText(apiKey))
+				builder.requestInterceptor(new ApiKeyInterceptor(apiKey));
+		});
 	}
 
 	@Bean
-	@ConditionalOnMissingBean
+	@ConditionalOnMissingBean(Cleanvoice.class)
 	CleanvoiceClient cleanvoiceClient(CleanvoiceEditsApi edits, CleanvoiceUploadsApi uploads,
 			CleanvoiceAccountApi account, SignedUrlStorageApi storage, CleanvoiceProperties properties) {
 		return new CleanvoiceClient(edits, uploads, account, storage, properties.polling());
