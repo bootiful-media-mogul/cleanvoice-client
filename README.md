@@ -88,3 +88,7 @@ The API key and the signature on pre-signed upload URLs are never logged.
 - `summarization` and `transcription` also come back as `[]` when not requested; they map to `null`.
 - Unknown statuses map to `EditStatus.UNKNOWN`; `POSTPROCESSING` is not terminal.
 - Rate limits: 30/min for create and upload (100 enterprise), 300/min for polling.
+
+## Results
+
+* this is live at `com.joshlong` : `cleanvoice-client` on Maven Central 
